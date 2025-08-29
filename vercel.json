@@ -7,11 +7,19 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/api/"
+      "destination": "/api/$1"
     },
     {
       "source": "/(.*)",
       "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/manifest.json",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+      ]
     }
   ]
 }
