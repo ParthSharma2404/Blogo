@@ -3,10 +3,11 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-require('dotenv').config({ path: '../.env' }); // Relative to src/backend
+require('dotenv').config({ path: '../.env' }); // Points to root .env from src/backend
 
 const app = express();
 
+// Cached MongoDB Connection
 let cachedDb = null;
 async function connectDB() {
   if (cachedDb) return cachedDb;
@@ -24,12 +25,11 @@ async function connectDB() {
   }
 }
 
-app.use(cors({ 
-  origin: ['https://your-vercel-app.vercel.app', 'http://localhost:3000'], 
-  credentials: true 
-}));
+// Middleware
+app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 app.use(express.json());
 
+// Models
 const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   username: { type: String, required: true, unique: true },
@@ -45,6 +45,7 @@ const blogSchema = new mongoose.Schema({
 });
 const Blog = mongoose.model('Blog', blogSchema);
 
+// Routes
 app.post('/api/login', async (req, res) => {
   try {
     await connectDB();
@@ -73,5 +74,19 @@ app.get('/api/blogs', async (req, res) => {
   }
 });
 
+// Seed Data (Optional, for testing)
+app.get('/api/seed', async (req, res) => {
+  try {
+    await connectDB();
+    const user = new User({ email: 'test@example.com', username: 'testuser', password: await bcrypt.hash('password123', 10) });
+    await user.save();
+    const blog = new Blog({ title: 'Sample Blog', content: 'This is a test blog.', author: user._id });
+    await blog.save();
+    res.json({ message: 'Seeded data successfully' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => console.log(`Server on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
