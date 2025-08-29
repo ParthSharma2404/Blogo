@@ -1,8 +1,20 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-require('dotenv').config({ path: './src/backend/.env' });
-const connectDB = require('../../src/backend/config/db');
+
+// Load env vars (Vercel provides them automatically; no dotenv needed here)
+// connectDB will be called in the handler
+
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+  } catch (error) {
+    console.error('Atlas connection error:', error);
+  }
+};
 
 const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
@@ -11,9 +23,8 @@ const userSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', userSchema);
 
-connectDB();
-
 module.exports = async (req, res) => {
+  await connectDB(); // Connect on each invocation (serverless cold start)
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });

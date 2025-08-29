@@ -1,7 +1,15 @@
-// api/blogs/all.js
 const mongoose = require('mongoose');
-require('dotenv').config({ path: './src/backend/.env' });
-const connectDB = require('../../src/backend/config/db');
+
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+  } catch (error) {
+    console.error('Atlas connection error:', error);
+  }
+};
 
 const blogSchema = new mongoose.Schema({
   title: { type: String, required: true },
@@ -11,9 +19,8 @@ const blogSchema = new mongoose.Schema({
 });
 const Blog = mongoose.model('Blog', blogSchema);
 
-connectDB();
-
 module.exports = async (req, res) => {
+  await connectDB();
   try {
     const blogs = await Blog.find().populate('author', 'username');
     res.status(200).json(blogs);
