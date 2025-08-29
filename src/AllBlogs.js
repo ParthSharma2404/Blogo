@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
+const API_BASE = process.env.REACT_APP_API_URL || '/api';
+
 function AllBlogs() {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -10,7 +12,7 @@ function AllBlogs() {
     const fetchAllBlogs = async () => {
       try {
         const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-        const response = await axios.get('http://localhost:5000/api/blogs/all', config);
+        const response = await axios.get(`${API_BASE}/blogs/all`, config);
         setBlogs(response.data);
       } catch (error) {
         console.error('Error fetching all blogs:', error.message);

@@ -23,3 +23,5 @@ src/backend/.env
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+dump/
+test-atlas.js
