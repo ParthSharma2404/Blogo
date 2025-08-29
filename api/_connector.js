@@ -11,7 +11,7 @@ async function connectToDatabase() {
   if (!cached.promise) {
     const uri = process.env.MONGODB_URI;
     if (!uri) throw new Error('MONGODB_URI missing');
-    cached.promise = mongoose.connect(uri, { bufferCommands: false, serverSelectionTimeoutMS: 5000 }).then(mongoose => {
+    cached.promise = mongoose.connect(uri, { bufferCommands: false, serverSelectionTimeoutMS: 10000 }).then(mongoose => {
       console.log('Atlas connected');
       return mongoose;
     }).catch(err => {
