@@ -1,5 +1,5 @@
 {
-  "name": "themetoggle",
+  "name": "blogo",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -55,7 +55,7 @@
   },
 
   "engines": {
-    "node": "20.x"
+    "node": "16.x"
   }
 
 }
