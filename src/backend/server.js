@@ -7,29 +7,29 @@ require('dotenv').config({ path: './.env' });
 
 const app = express();
 
-// Connect to Atlas
-const connectDB = async () => {
+let cachedDb = null;
+async function connectDB() {
+  if (cachedDb) return cachedDb;
   try {
-    await mongoose.connect(process.env.MONGODB_URI, {
+    cachedDb = await mongoose.connect(process.env.MONGODB_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 5000,
     });
     console.log('Connected to MongoDB Atlas');
+    return cachedDb;
   } catch (error) {
-    console.error('Atlas connection error:', error);
+    console.error('Atlas connection error:', error.message);
     process.exit(1);
   }
-};
-connectDB();
+}
 
-// Middleware
 app.use(cors({ 
   origin: ['https://your-vercel-app.vercel.app', 'http://localhost:3000'], 
   credentials: true 
 }));
 app.use(express.json());
 
-// Models
 const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   username: { type: String, required: true, unique: true },
@@ -40,12 +40,14 @@ const User = mongoose.model('User', userSchema);
 const blogSchema = new mongoose.Schema({
   title: { type: String, required: true },
   content: String,
+  author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  timestamp: { type: Date, default: Date.now },
 });
 const Blog = mongoose.model('Blog', blogSchema);
 
-// Routes
 app.post('/api/login', async (req, res) => {
   try {
+    await connectDB();
     const { email, password } = req.body;
     const user = await User.findOne({ email });
     if (!user || !(await bcrypt.compare(password, user.password))) {
@@ -60,7 +62,11 @@ app.post('/api/login', async (req, res) => {
 
 app.get('/api/blogs', async (req, res) => {
   try {
-    const blogs = await Blog.find();
+    await connectDB();
+    const blogs = await Blog.find().populate('author', 'username');
+    if (!blogs || blogs.length === 0) {
+      return res.status(404).json({ error: 'No blogs found' });
+    }
     res.json(blogs);
   } catch (err) {
     res.status(500).json({ error: err.message });
