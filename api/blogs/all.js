@@ -14,6 +14,9 @@ export default async function handler(req, res) {
   try {
     await connectToDatabase(); // Use cached connection
     const blogs = await Blog.find().populate('author', 'username');
+    if (!blogs || blogs.length === 0) {
+      return res.status(404).json({ error: 'No blogs found' });
+    }
     res.status(200).json(blogs);
   } catch (err) {
     console.error('Error in /api/blogs/all:', err.message); // Log for Vercel Functions Logs

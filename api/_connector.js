@@ -20,13 +20,14 @@ async function connectToDatabase() {
     const opts = {
       bufferCommands: false, // Disable buffering on initial connect
       serverSelectionTimeoutMS: 5000, // 5-second timeout
+      maxPoolSize: 10, // Limit connections for serverless (Atlas free tier)
     };
 
     cached.promise = mongoose.connect(uri, opts).then((mongoose) => {
-      console.log('Connected to MongoDB Atlas');
+      console.log('Connected to MongoDB Atlas successfully');
       return mongoose;
     }).catch((err) => {
-      console.error('MongoDB connection error:', err);
+      console.error('MongoDB connection error:', err.message);
       throw err;
     });
   }
