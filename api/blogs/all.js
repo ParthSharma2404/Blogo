@@ -1,15 +1,4 @@
-const mongoose = require('mongoose');
-
-const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-  } catch (error) {
-    console.error('Atlas connection error:', error);
-  }
-};
+import connectToDatabase from './_connector.js'; // Adjust path if needed
 
 const blogSchema = new mongoose.Schema({
   title: { type: String, required: true },
@@ -17,14 +6,15 @@ const blogSchema = new mongoose.Schema({
   author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   timestamp: { type: Date, default: Date.now },
 });
-const Blog = mongoose.model('Blog', blogSchema);
+const Blog = mongoose.models.Blog || mongoose.model('Blog', blogSchema);
 
 module.exports = async (req, res) => {
-  await connectDB();
   try {
+    await connectToDatabase();
     const blogs = await Blog.find().populate('author', 'username');
     res.status(200).json(blogs);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Error in /api/blogs/all:', err.message);
+    res.status(500).json({ error: 'Failed to fetch blogs', details: err.message });
   }
 };
