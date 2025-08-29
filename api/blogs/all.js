@@ -1,4 +1,6 @@
-import connectToDatabase from './_connector.js'; // Adjust path if needed
+import connectToDatabase from '../_connector.js'; // Path to shared connector
+
+const mongoose = await import('mongoose');
 
 const blogSchema = new mongoose.Schema({
   title: { type: String, required: true },
@@ -8,13 +10,13 @@ const blogSchema = new mongoose.Schema({
 });
 const Blog = mongoose.models.Blog || mongoose.model('Blog', blogSchema);
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   try {
-    await connectToDatabase();
+    await connectToDatabase(); // Use cached connection
     const blogs = await Blog.find().populate('author', 'username');
     res.status(200).json(blogs);
   } catch (err) {
-    console.error('Error in /api/blogs/all:', err.message);
+    console.error('Error in /api/blogs/all:', err.message); // Log for Vercel Functions Logs
     res.status(500).json({ error: 'Failed to fetch blogs', details: err.message });
   }
-};
+}

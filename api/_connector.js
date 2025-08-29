@@ -13,15 +13,21 @@ async function connectToDatabase() {
 
   if (!cached.promise) {
     const uri = process.env.MONGODB_URI;
-    if (!uri) throw new Error('MONGODB_URI is not defined');
+    if (!uri) {
+      throw new Error('MONGODB_URI is not defined in environment variables');
+    }
 
     const opts = {
-      bufferCommands: false, // Disable command buffering on initial connect
+      bufferCommands: false, // Disable buffering on initial connect
       serverSelectionTimeoutMS: 5000, // 5-second timeout
     };
 
     cached.promise = mongoose.connect(uri, opts).then((mongoose) => {
+      console.log('Connected to MongoDB Atlas');
       return mongoose;
+    }).catch((err) => {
+      console.error('MongoDB connection error:', err);
+      throw err;
     });
   }
 
