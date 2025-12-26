@@ -19,18 +19,27 @@ function Login() {
   const navigate = useNavigate();
 
   const onSubmit = async (data) => {
-    try {
-      const response = await axios.post(`${API_BASE}/auth/login`, {
-        email: data.email,
-        password: data.password,
-      });
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("username", response.data.user.username);
-      navigate("/dashboard");
-    } catch (error) {
-      alert("Login failed: " + (error.response?.data?.error || error.message));
-    }
-  };
+  try {
+    const response = await axios.post(`${API_BASE}/auth/login`, {
+      email: data.email,
+      password: data.password,
+    });
+    localStorage.setItem("token", response.data.token);
+    localStorage.setItem("username", response.data.user.username);
+    navigate("/dashboard");
+  } catch (error) {
+    // 1. Log the full error to the console (F12) to see the structure
+    console.error("Full Backend Error:", error.response?.data);
+
+    // 2. Try to extract a specific message string
+    const errorMessage = error.response?.data?.message || 
+                         error.response?.data?.error || 
+                         error.message || 
+                         "An unknown error occurred";
+
+    alert("Login failed: " + errorMessage);
+  }
+};
 
   return (
     <div className="min-h-screen content-center">
